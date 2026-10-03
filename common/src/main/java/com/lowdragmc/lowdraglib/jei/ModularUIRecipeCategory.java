@@ -83,7 +83,7 @@ public abstract class ModularUIRecipeCategory<T> implements IRecipeCategory<T> {
 
                 @Override
                 public List<Component> getTooltip(Object ingredient, TooltipFlag tooltipFlag) {
-                    return Collections.emptyList();
+                    return slot.getFullTooltipTexts();
                 }
 
                 @Override
