@@ -62,6 +62,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -240,7 +241,10 @@ public class TankWidget extends Widget implements IRecipeIngredientSlot, IConfig
         }
 
         if (LDLib.isJeiLoaded()) {
-            return List.of(JEICallWrapper.getPlatformFluidTypeForJEIClickable(FluidStack.create(lastFluidInTank.getFluid(), lastFluidInTank.getAmount()), getPosition(), getSize()));
+            var ingredient = JEICallWrapper.getPlatformFluidTypeForJEIClickable(
+                    FluidStack.create(lastFluidInTank.getFluid(), lastFluidInTank.getAmount(), lastFluidInTank.getTag()),
+                    getPosition(), getSize());
+            return ingredient == null ? Collections.emptyList() : List.of(ingredient);
         }
         if (LDLib.isReiLoaded()) {
             return List.of(EntryStacks.of(dev.architectury.fluid.FluidStack.create(lastFluidInTank.getFluid(), lastFluidInTank.getAmount(), lastFluidInTank.getTag())));
@@ -255,7 +259,7 @@ public class TankWidget extends Widget implements IRecipeIngredientSlot, IConfig
     public Object getXEICurrentIngredient() {
         if (lastFluidInTank == null || lastFluidInTank.isEmpty()) return null;
         if (LDLib.isJeiLoaded()) {
-            return JEICallWrapper.getPlatformFluidTypeForJEIClickable(FluidStack.create(lastFluidInTank.getFluid(), lastFluidInTank.getAmount()), getPosition(), getSize());
+            return JEICallWrapper.getPlatformFluidTypeForJEIClickable(FluidStack.create(lastFluidInTank.getFluid(), lastFluidInTank.getAmount(), lastFluidInTank.getTag()), getPosition(), getSize());
         } else if (LDLib.isEmiLoaded()) {
             return EMICallWrapper.getEmiIngredient(lastFluidInTank, XEIChance);
         }
@@ -280,6 +284,7 @@ public class TankWidget extends Widget implements IRecipeIngredientSlot, IConfig
             return stream
                     .filter(fluid -> !fluid.isEmpty())
                     .map(fluid -> JEICallWrapper.getPlatformFluidTypeForJEIClickable(fluid, getPosition(), getSize()))
+                    .filter(Objects::nonNull)
                     .toList();
         } else if (LDLib.isReiLoaded()) {
             return REICallWrapper.getReiIngredients(stream);
@@ -338,6 +343,7 @@ public class TankWidget extends Widget implements IRecipeIngredientSlot, IConfig
                                 .stream()
                                 .flatMap(HolderSet.ListBacked::stream)
                                 .map(fluid -> JEICallWrapper.getPlatformFluidTypeForJEIClickable(FluidStack.create(fluid.value(), pair.getSecond()), getPosition(), getSize())))
+                        .filter(Objects::nonNull)
                         .collect(Collectors.toList());
             } else if (LDLib.isReiLoaded()) {
                 ref.returnValue = REICallWrapper.getReiIngredients(list);
